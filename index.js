@@ -4,7 +4,7 @@ import dotenv from "dotenv"
 const app = express();
 dotenv.config();
 const port = process.env.PORT || 5000;
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 
 // middleware
 app.use(cors());
@@ -35,7 +35,30 @@ async function run() {
     // Send a ping to confirm a successful connection
 
 
-    //app
+    const servicesCollection = client.db("carDoctor").collection("services");
+
+
+
+    // Get all service data in one time__
+    app.get("/services", async (req, res) => {
+      const result = await servicesCollection.find().toArray();
+      res.send(result);
+    })
+
+    // Get data of a spacie id useing "Options" to load few value of a data__
+    app.get("/services/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const options = {
+        projection: {
+          title: 1,
+          price: 1,
+        }
+      }
+      const result = await servicesCollection.findOne(query, options);
+      res.send(result);
+    })
+
 
 
     await client.db("admin").command({ ping: 1 });
