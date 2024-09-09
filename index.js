@@ -10,9 +10,6 @@ import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 app.use(cors());
 app.use(express.json());
 
-// nsIjGXBlN7SmZfaG
-// carDoctor
-
 
 
 
@@ -36,6 +33,7 @@ async function run() {
 
 
     const servicesCollection = client.db("carDoctor").collection("services");
+    const bookingCollection = client.db("carDoctor").collection("bookings");
 
 
 
@@ -53,9 +51,27 @@ async function run() {
         projection: {
           title: 1,
           price: 1,
+          img: 1,
         }
       }
       const result = await servicesCollection.findOne(query, options);
+      res.send(result);
+    })
+
+    // Post oparation for bookings__
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
+      res.send(result);
+    })
+
+    // Grt oparation for bookings__
+    app.get("/bookings", async (req, res) => {
+      let qurey = {};
+      if(req.query?.email) {
+        qurey = {email: req.query.email}
+      }
+      const result = await bookingCollection.find(qurey).toArray();
       res.send(result);
     })
 
