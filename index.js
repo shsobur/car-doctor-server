@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv"
+import jwt from "jsonwebtoken";
 const app = express();
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -37,6 +38,14 @@ async function run() {
 
 
 
+    // jwt__
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const token=  jwt.sign(user, "secret", { expiresIn: '1h' });
+      res.send(token);
+    })
+
     // Get all service data in one time__
     app.get("/services", async (req, res) => {
       const result = await servicesCollection.find().toArray();
@@ -65,13 +74,21 @@ async function run() {
       res.send(result);
     })
 
-    // Grt oparation for bookings__
+    // Get oparation for bookings__
     app.get("/bookings", async (req, res) => {
       let qurey = {};
       if(req.query?.email) {
         qurey = {email: req.query.email}
       }
       const result = await bookingCollection.find(qurey).toArray();
+      res.send(result);
+    })
+
+    //Delete oparation for booking__
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await bookingCollection.deleteOne(query);
       res.send(result);
     })
 
