@@ -2,14 +2,19 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv"
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 const app = express();
 dotenv.config();
 const port = process.env.PORT || 5000;
 import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 
 // middleware
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: ["http://localhost:5173"]
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 
 
@@ -42,8 +47,13 @@ async function run() {
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       console.log(user);
-      const token=  jwt.sign(user, "secret", { expiresIn: '1h' });
-      res.send(token);
+      const token = jwt.sign(user, process.env.SECRET_TOKEN, { expiresIn: '1h' })
+      res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: false
+      })
+      .send({success: true})
     })
 
     // Get all service data in one time__
@@ -77,9 +87,12 @@ async function run() {
     // Get oparation for bookings__
     app.get("/bookings", async (req, res) => {
       let qurey = {};
+      console.log(req.cookies);
+
       if(req.query?.email) {
         qurey = {email: req.query.email}
       }
+
       const result = await bookingCollection.find(qurey).toArray();
       res.send(result);
     })
